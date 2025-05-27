@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Presentation Analyzer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .loader {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #4f46e5;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-center p-6 font-sans">
+  <h1 class="text-3xl font-bold text-indigo-700 mb-4">Presentation Skill Analyzer</h1>
+
+  <div class="flex justify-center">
+    <img src="/video_feed" id="video" class="rounded-lg shadow-md" width="640">
+  </div>
+
+  <div class="mt-6">
+    <button onclick="startVideo()" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">Start Video</button>
+    <button onclick="stopVideo()" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 ml-2">Stop Video</button>
+    <button onclick="analyze()" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 ml-2">Analyze</button>
+  </div>
+
+  <div id="loading" class="mt-6 hidden">
+    <div class="loader"></div>
+    <p class="text-gray-600 mt-2">Analyzing, please wait...</p>
+  </div>
+
+  <div id="results" class="mt-6 hidden bg-white p-4 rounded shadow-md w-fit mx-auto text-left">
+    <h2 class="text-xl font-bold mb-2">Analysis Results</h2>
+    <p><strong>Total Score:</strong> <span id="total_score"></span></p>
+    <p><strong>Face Centering Score:</strong> <span id="face_score"></span></p>
+    <p><strong>Motion Score:</strong> <span id="motion_score"></span></p>
+    <p><strong>Speech Score:</strong> <span id="speech_score"></span></p>
+    <p><strong>You Said:</strong> <em id="spoken_text"></em></p>
+  </div>
+
+  <script>
+    function startVideo() {
+      fetch('/start_video')
+        .then(res => res.json())
+        .then(data => alert(data.status));
+    }
+
+    function stopVideo() {
+      fetch('/stop_video')
+        .then(res => res.json())
+        .then(data => alert(data.status));
+    }
+
+    function analyze() {
+      document.getElementById("loading").classList.remove("hidden");
+      document.getElementById("results").classList.add("hidden");
+
+      fetch('/analyze')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("loading").classList.add("hidden");
+          document.getElementById("results").classList.remove("hidden");
+
+          document.getElementById("total_score").textContent = data.total_score;
+          document.getElementById("face_score").textContent = data.face_score;
+          document.getElementById("motion_score").textContent = data.motion_score;
+          document.getElementById("speech_score").textContent = data.speech_score;
+          document.getElementById("spoken_text").textContent = data.spoken_text;
+        })
+        .catch(err => {
+          alert("Error during analysis.");
+          document.getElementById("loading").classList.add("hidden");
+        });
+    }
+  </script>
+</body>
+</html>
